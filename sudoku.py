@@ -4,6 +4,7 @@ class sudoku_board:
         self.col_mapping = { i: dict() for i in range(9)}
         self.row_mapping = { i: dict() for i in range(9)}
         self.box_mapping = { i: dict() for i in range(9)}
+        self.solved = False
 
     def print_board(self):
         self.print_line(self.board[0:3])
@@ -28,22 +29,35 @@ class sudoku_board:
     def solve(self):
         # TODO Solve the board using the mappings
         print "Solved"
+        self.solved = True
 
     def check(self):
         # TODO Checks if valid
         print "Checking if solved"
+        if self.check_mapping(self.box_mapping) and self.check_mapping(self.col_mapping) \
+             and self.check_mapping(self.row_mapping):
+            self.solved = True
+
+    def check_mapping(self, mapping):
+        assert(len(mapping) == 9)
+        for nums, count in mapping:
+            assert(nums >= 0 and nums < 9)
+            if count != 1:
+                return False
+        return True
 
     def user_input(self):
         # Processes the user input
-        self.print_board()
-        move = sudoku_move(raw_input("What is your next move? "))
-        # Insert the move if it is valid
-        if move.is_valid():
-            self.update_mappings(move.box, move.location, move.value)
-            self.board[move.box][move.location] = move.value
-            self.check()
-        else:
-            print "Entered invalid move!!"
+        while (not self.solved):
+            self.print_board()
+            move = sudoku_move(raw_input("What is your next move? "))
+            # Insert the move if it is valid
+            if move.is_valid():
+                self.update_mappings(move.box, move.location, move.value)
+                self.board[move.box][move.location] = move.value
+                self.check()
+            else:
+                print "Entered invalid move!!"
 
     def update_mappings(self, box, location, value):
         prev = self.board[box][location]
@@ -138,5 +152,4 @@ class sudoku_move:
 
 if __name__ == "__main__":
     game = sudoku_board()
-    while True:
-        game.user_input()
+    game.user_input()
