@@ -37,9 +37,10 @@ class sudoku_board:
         # Processes the user input
         self.print_board()
         move = sudoku_move(raw_input("What is your next move? "))
+        # Insert the move if it is valid
         if move.is_valid():
             self.update_mappings(move.box, move.location, move.value)
-            self.board[move.board][move.location] = move.value
+            self.board[move.box][move.location] = move.value
             self.check()
         else:
             print "Entered invalid move!!"
@@ -57,50 +58,77 @@ class sudoku_board:
         
         # Update row mapping
         row = self.get_row(box, location)
+        if prev in self.row_mapping[row]:
+            self.row_mapping[row][prev] -= 1
+        if value in self.row_mapping[box]:
+            self.row_mapping[box][value] += 1
+        else:
+            self.row_mapping[box][value] = 1
         
         # Update column mapping
-        column = self.get_location(box, location)
+        column = self.get_column(box, location)
+        if prev in self.col_mapping[column]:
+            self.col_mapping[column][prev] -= 1
+        if value in self.col_mapping[column]:
+            self.col_mapping[column][value] += 1
+        else:
+            self.col_mapping[column][value] = 1
 
     def get_row(self, box, location):
         row = 0
+
         # Add offset based on box index
         if box >= 3 and box < 6:
             row += 3
         if box >= 6 and box < 9:
             row += 6
+        
         # Add offset based on location index:
         if location >= 3 and location < 6:
             row += 1
         if location >= 6 and location < 9:
             row += 2
+        
         return row
 
-    def get_column(self, box, location)
-                
+    def get_column(self, box, location):
+        col = 0
+
+        # Add offset based on box index
+        if box % 3 == 1:
+            col += 3
+        if box % 3 == 2:
+            col += 6
+
+        # Add offset based on box index
+        if location % 3 == 1:
+            col += 1
+        if location % 3 == 2:
+            col += 2
+        
+        return col
 
 class sudoku_move:
     def __init__(self, user_input):
-        # TODO need better names
         # Assumes user input is split by whitespace
         # Need a cleaner way to do this
 
         user_input = user_input.split()
-        print user_input
         if (len(user_input) == 3):
             try:
-                self.board = int(user_input[0])
+                self.box = int(user_input[0])
                 self.location = int(user_input[1])
                 self.value = int(user_input[2])
             except ValueError:
                 print("Not an integer! Try again.")
         else:
-            self.board = -1
+            self.box = -1
             self.location = -1
             self.value = -1
 
     def is_valid(self):
         # How would I remove this redundancy?
-        if self.board < 0 or self.board >= 9:
+        if self.box < 0 or self.box >= 9:
             return False
         if self.location < 0 or self.location >= 9:
             return False
@@ -109,6 +137,6 @@ class sudoku_move:
         return True
 
 if __name__ == "__main__":
-    a = sudoku_board()
+    game = sudoku_board()
     while True:
-        a.user_input()
+        game.user_input()
