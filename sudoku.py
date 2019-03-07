@@ -1,4 +1,4 @@
-class sudoku_board:
+class SudokuBoard:
     def __init__(self):
         self.board =[[ "X_" + str(y)+ str(x) for x in range(9)] for y in range(9)]
         self.col_mapping = { i: dict() for i in range(9)}
@@ -50,7 +50,7 @@ class sudoku_board:
         # Processes the user input
         while (not self.solved):
             self.print_board()
-            move = sudoku_move(raw_input("What is your next move? "))
+            move = SudokuMove(raw_input("What is your next move? "))
             # Insert the move if it is valid
             if move.is_valid():
                 self.update_mappings(move.box, move.location, move.value)
@@ -122,7 +122,7 @@ class sudoku_board:
         
         return col
 
-class sudoku_move:
+class SudokuMove:
     def __init__(self, user_input):
         # Assumes user input is split by whitespace
         # Need a cleaner way to do this
@@ -141,7 +141,6 @@ class sudoku_move:
             self.value = -1
 
     def is_valid(self):
-        # How would I remove this redundancy?
         if self.box < 0 or self.box >= 9:
             return False
         if self.location < 0 or self.location >= 9:
@@ -151,5 +150,5 @@ class sudoku_move:
         return True
 
 if __name__ == "__main__":
-    game = sudoku_board()
+    game = SudokuBoard()
     game.user_input()
