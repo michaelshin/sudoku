@@ -19,8 +19,8 @@ class SudokuBoard:
                 for k in range(0,3):
                     string += str(line[j][k+i]) + " "
                 string += "|"
-            print string
-        print "------------------------------------------------"
+            print(string)
+        print("------------------------------------------------")
 
     def create_board(self):
         # TODO Creates an easy board from a preset list
@@ -28,12 +28,12 @@ class SudokuBoard:
 
     def solve(self):
         # TODO Solve the board using the mappings
-        print "Solved"
+        print("Solved")
         self.solved = True
 
     def check(self):
         # TODO Checks if valid
-        print "Checking if solved"
+        print("Checking if solved")
         if self.check_mapping(self.box_mapping) and self.check_mapping(self.col_mapping) \
              and self.check_mapping(self.row_mapping):
             self.solved = True
@@ -57,7 +57,7 @@ class SudokuBoard:
                 self.board[move.box][move.location] = move.value
                 self.check()
             else:
-                print "Entered invalid move!!"
+                print ("Entered invalid move!!")
 
     def update_mappings(self, box, location, value):
         prev = self.board[box][location]
