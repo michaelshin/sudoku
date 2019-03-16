@@ -1,19 +1,30 @@
-if __name__ == "__main__":
-    from PyQt5.QtWidgets import QApplication, QTableView
-    from sudoku_box_model import SudokuBoxModel
+from PyQt5.QtWidgets import QApplication, QTableView
+
+from sudoku_box_model import SudokuBoxModel
+import signal
+
+def main():
+    # Catch control-C to kill the program
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     app = QApplication([])
+    
+    # Set title  (Not sure if this is the best solution)
+    app.setApplicationDisplayName('Test')
+    
     table_view = QTableView()
-    # Model the boxes
     model = SudokuBoxModel()
     table_view.setModel(model)
 
-
-    # Model the sub-boxes and link with the parent box
-    
-    # Connect the model to the widget
-
+    # Hide headers
+    hor_header = table_view.horizontalHeader()
+    hor_header.hide()
+    vert_header = table_view.verticalHeader()
+    vert_header.hide()
 
     table_view.show()
 
-    app.exec()
+    return app.exec()
+
+if __name__ == "__main__":
+    main()

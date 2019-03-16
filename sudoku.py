@@ -1,92 +1,89 @@
-class SudokuBoard:
-    def __init__(self):
+from PyQt5.QtCore import Qt, pyqtSignal, QObject
+
+class SudokuBoard(QObject):
+    def __init__(self, parent):
+        super().__init__(parent)
         self.board =[[ "X_" + str(y)+ str(x) for x in range(9)] for y in range(9)]
-        self.col_mapping = { i: dict() for i in range(9)}
-        self.row_mapping = { i: dict() for i in range(9)}
-        self.box_mapping = { i: dict() for i in range(9)}
+        self.col_mapping = [[0 for i in range(9)] for j in range(9)]
+        self.row_mapping = [[0 for i in range(9)] for j in range(9)]
+        self.box_mapping = [[0 for i in range(9)] for j in range(9)]
         self.solved = False
-
-    def print_board(self):
-        self.print_line(self.board[0:3])
-        self.print_line(self.board[3:6])
-        self.print_line(self.board[6:9])
-
-    def print_line(self, line):
-        string = ""
-        for i in range(0,9,3):
-            string = ""
-            for j in range(0,3):
-                for k in range(0,3):
-                    string += str(line[j][k+i]) + " "
-                string += "|"
-            print(string)
-        print("------------------------------------------------")
 
     def create_board(self):
         # TODO Creates an easy board from a preset list
+        pass
+
+    def test(self):
+        b = [[1,2,3,4,5,6,7,8,9],[4,5,6,7,8,9,1,2,3],[7,8,9,1,2,3,4,5,6],[2,3,1,8,7,5,6,9,4],[6,7,4,9,1,2,5,3,8],[8,9,5,3,6,4,2,1,7],[3,1,7,5,4,2,9,6,8],[2,6,5,8,9,7,3,4,1],[9,4,8,6,3,1,5,7,2]]
+        for box in range(len(b)):
+            for location in range(len(b[box])):
+                value = b[box][location]
+                self.update_mappings(box, location, value)
+                self.board[box][location] = value
         return
+                
+
+    def is_editable(self, col, row):
+        return True
 
     def solve(self):
         # TODO Solve the board using the mappings
         print("Solved")
         self.solved = True
 
+    def get_data(self, col, row):
+        board = (row//3)*3 + (col//3)
+        offset = (row % 3) *3 + (col %3)
+        return self.board[board][offset]
+
     def check(self):
-        # TODO Checks if valid
-        print("Checking if solved")
+        # Checks if solved
         if self.check_mapping(self.box_mapping) and self.check_mapping(self.col_mapping) \
              and self.check_mapping(self.row_mapping):
             self.solved = True
+        else:
+            self.solved = False
 
     def check_mapping(self, mapping):
         assert(len(mapping) == 9)
-        for nums, count in mapping:
-            assert(nums >= 0 and nums < 9)
-            if count != 1:
-                return False
+        for l in mapping:
+            for count in l:
+                if count != 1:
+                    return False
         return True
 
-    def user_input(self):
-        # Processes the user input
-        while (not self.solved):
-            self.print_board()
-            move = SudokuMove(raw_input("What is your next move? "))
-            # Insert the move if it is valid
-            if move.is_valid():
-                self.update_mappings(move.box, move.location, move.value)
-                self.board[move.box][move.location] = move.value
-                self.check()
-            else:
-                print ("Entered invalid move!!")
-
+    def user_input(self, col, row, value):
+        move = SudokuMove(col, row, value)
+        if move.is_valid():
+            self.update_mappings(move.box, move.location, move.value)
+            self.board[move.box][move.location] = move.value
+            self.check()
+        
     def update_mappings(self, box, location, value):
-        prev = self.board[box][location]
-        
+        prev_index = -1
+        try:
+            prev_index = int(self.board[box][location]) - 1
+        except ValueError:
+            prev_index = -1
+
+        curr_index = int(value) - 1
+
         # Update box mapping
-        if prev in self.box_mapping[box]:
-            self.box_mapping[box][prev] -= 1
-        if value in self.box_mapping[box]:
-            self.box_mapping[box][value] += 1
-        else:
-            self.box_mapping[box][value] = 1
-        
+        if prev_index >= 0 and self.box_mapping[box][prev_index] > 0:
+            self.box_mapping[box][prev_index] -= 1
+        self.box_mapping[box][curr_index] += 1
+
         # Update row mapping
         row = self.get_row(box, location)
-        if prev in self.row_mapping[row]:
-            self.row_mapping[row][prev] -= 1
-        if value in self.row_mapping[box]:
-            self.row_mapping[box][value] += 1
-        else:
-            self.row_mapping[box][value] = 1
+        if prev_index >= 0 and self.row_mapping[row][prev_index] > 0:
+            self.row_mapping[row][prev_index] -= 1
+        self.row_mapping[row][curr_index] += 1
         
         # Update column mapping
         column = self.get_column(box, location)
-        if prev in self.col_mapping[column]:
-            self.col_mapping[column][prev] -= 1
-        if value in self.col_mapping[column]:
-            self.col_mapping[column][value] += 1
-        else:
-            self.col_mapping[column][value] = 1
+        if prev_index >= 0 and self.col_mapping[column][prev_index] > 0:
+            self.col_mapping[column][prev_index] -= 1
+        self.col_mapping[column][curr_index] += 1
 
     def get_row(self, box, location):
         row = 0
@@ -114,7 +111,7 @@ class SudokuBoard:
         if box % 3 == 2:
             col += 6
 
-        # Add offset based on box index
+        # Add offset based on location index
         if location % 3 == 1:
             col += 1
         if location % 3 == 2:
@@ -123,21 +120,12 @@ class SudokuBoard:
         return col
 
 class SudokuMove:
-    def __init__(self, user_input):
-        # Assumes user input is split by whitespace
-        # Need a cleaner way to do this
-
-        user_input = user_input.split()
-        if (len(user_input) == 3):
-            try:
-                self.box = int(user_input[0])
-                self.location = int(user_input[1])
-                self.value = int(user_input[2])
-            except ValueError:
-                print("Not an integer! Try again.")
-        else:
-            self.box = -1
-            self.location = -1
+    def __init__(self, col, row, value):
+        self.box = (row//3)*3 + (col//3)
+        self.location = (row % 3) *3 + (col %3)
+        try:
+            self.value = int(value)
+        except ValueError:
             self.value = -1
 
     def is_valid(self):
