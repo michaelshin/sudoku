@@ -136,7 +136,3 @@ class SudokuMove:
         if self.value < 1 or self.value > 9:
             return False
         return True
-
-if __name__ == "__main__":
-    game = SudokuBoard()
-    game.user_input()
